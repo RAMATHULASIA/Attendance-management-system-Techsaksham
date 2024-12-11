@@ -1,0 +1,66 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+import ipywidgets as widgets
+from IPython.display import display
+
+# Load Image
+image_path = 'Couple.jpg' # Change to your image path
+image = cv2.imread(image_path)
+image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+# Widget to display Before vs After images
+def display_before_after(before, after, title_before='Before', title_after='After'):
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+    axs[0].imshow(before)
+    axs[0].set_title(title_before)
+    axs[0].axis('off')
+    axs[1].imshow(after)
+    axs[1].set_title(title_after)
+    axs[1].axis('off')
+    plt.show()
+# Edge Detection
+edges = cv2.Canny(image, 100, 200)
+display_before_after(image_rgb, edges, 'Original Image', 'Edges Detected')
+# Image Sharpening
+kernel_sharpening = np.array([
+    [-1, -1, -1, -1, -1],
+    [-1,  1,  1,  1, -1],
+    [-1,  1,  10,  1, -1],
+    [-1,  1,  1,  1, -1],
+    [-1, -1, -1, -1, -1]
+])
+sharpened = cv2.filter2D(image, -1, kernel_sharpening)
+display_before_after(image_rgb, cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB), 'Original Image', 'Sharpened Image')
+
+# Image Sharpening
+kernel_sharpening = np.array([
+    [-1, -1, -1, -1, -1],
+    [-1,  1,  1,  1, -1],
+    [-1,  1,  10,  1, -1],
+    [-1,  1,  1,  1, -1],
+    [-1, -1, -1, -1, -1]
+])
+sharpened = cv2.filter2D(image, -1, kernel_sharpening)
+display_before_after(image_rgb, cv2.cvtColor(sharpened, cv2.COLOR_BGR2RGB), 'Original Image', 'Sharpened Image')
+
+# Image Resize
+resized = cv2.resize(image, (image.shape[1]//2, image.shape[0]//2))
+display_before_after(image_rgb, cv2.cvtColor(resized, cv2.COLOR_BGR2RGB), 'Original Image', 'Resized Image')
+
+# Image Rotation
+(h, w) = image.shape[:2]
+center = (w // 2, h // 2)
+M = cv2.getRotationMatrix2D(center, 45, 1.0)
+rotated = cv2.warpAffine(image, M, (w, h))
+display_before_after(image_rgb, cv2.cvtColor(rotated, cv2.COLOR_BGR2RGB), 'Original Image', 'Rotated Image')
+
+# Face Detection
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+faces = face_cascade.detectMultiScale(gray_image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+face_detected_image = image_rgb.copy()
+for (x, y, w, h) in faces:
+    cv2.rectangle(face_detected_image, (x, y), (x + w, y + h), (255, 0, 0), 2)
+display_before_after(image_rgb, face_detected_image, 'Original Image', 'Faces Detected')
+
